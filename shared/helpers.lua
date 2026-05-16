@@ -1,0 +1,123 @@
+--- Generate a unique shipment ID using timestamp and random suffix
+---@return string
+function W2F.GenerateShipmentId()
+    return ('SHIP_%s_%s'):format(os.time(), math.random(1000, 9999))
+end
+
+--- Round a number to the nearest multiple
+---@param value number
+---@param nearest number
+---@return number
+function W2F.RoundToNearest(value, nearest)
+    if nearest <= 0 then return value end
+    return math.floor((value / nearest) + 0.5) * nearest
+end
+
+--- Clamp a value between min and max
+---@param value number
+---@param min number
+---@param max number
+---@return number
+function W2F.Clamp(value, min, max)
+    local v = tonumber(value)
+    local lo = tonumber(min)
+    local hi = tonumber(max)
+    if lo == nil or hi == nil then
+        return v or lo or hi or 0
+    end
+    if lo > hi then lo, hi = hi, lo end
+    if v == nil then v = lo end
+    if v < lo then return lo end
+    if v > hi then return hi end
+    return v
+end
+
+--- Check if a value exists in a table
+---@param tbl table
+---@param value any
+---@return boolean
+function W2F.TableContains(tbl, value)
+    for _, v in pairs(tbl) do
+        if v == value then return true end
+    end
+    return false
+end
+
+--- Debug print wrapper, only prints when Config.Debug is true
+---@param ... any
+function W2F.Debug(...)
+    if not Config.Debug then return end
+    local args = { ... }
+    local parts = {}
+    for i = 1, #args do
+        parts[#parts + 1] = tostring(args[i])
+    end
+    print(('%s [DEBUG] %s'):format(W2F.Prefix, table.concat(parts, ' ')))
+end
+
+--- Calculate the effective cooldown for a player loyalty level
+---@param baseCooldown number
+---@param loyaltyLevel number
+---@return number
+function W2F.GetEffectiveCooldown(baseCooldown, loyaltyLevel)
+    local level = Config.Loyalty.Levels[loyaltyLevel]
+    if not level then return baseCooldown end
+    return math.floor(baseCooldown * level.cooldownMultiplier)
+end
+
+--- Calculate the tip price based on loyalty level
+---@param loyaltyLevel number
+---@return number
+function W2F.CalculateTipPrice(loyaltyLevel)
+    local level = Config.Loyalty.Levels[loyaltyLevel]
+    if not level then
+        level = Config.Loyalty.Levels[0]
+    end
+
+    local price = Config.Payment.BaseTipPrice * level.priceMultiplier
+    price = W2F.RoundToNearest(price, Config.Payment.PriceRoundsToNearest)
+    return math.max(price, Config.Payment.MinTipPrice)
+end
+
+--- Get the shipment tier for a loyalty level
+---@param loyaltyLevel number
+---@return string
+function W2F.GetShipmentTier(loyaltyLevel)
+    local level = Config.Loyalty.Levels[loyaltyLevel]
+    if not level then return 'basic' end
+    return level.shipmentTier
+end
+
+--- Get the current unix timestamp
+---@return integer
+function W2F.GetTimestamp()
+    return os.time()
+end
+
+--- Check if a timestamp has expired
+---@param expiresAt integer
+---@return boolean
+function W2F.HasExpired(expiresAt)
+    return os.time() >= expiresAt
+end
+
+--- Calculate remaining seconds from an expiry timestamp
+---@param expiresAt integer
+---@return integer
+function W2F.GetTimeRemaining(expiresAt)
+    local remaining = expiresAt - os.time()
+    return remaining > 0 and remaining or 0
+end
+
+--- Format seconds into a readable string (e.g. "5m 30s")
+---@param seconds integer
+---@return string
+function W2F.FormatTime(seconds)
+    if seconds <= 0 then return '0s' end
+    local m = math.floor(seconds / 60)
+    local s = seconds % 60
+    if m > 0 then
+        return ('%dm %ds'):format(m, s)
+    end
+    return ('%ds'):format(s)
+end
