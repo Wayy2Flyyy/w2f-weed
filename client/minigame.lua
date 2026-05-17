@@ -82,6 +82,7 @@ function W2F.OpenRollingCraft()
             strains = ctx.strains,
             budsPerJoint = ctx.budsPerJoint,
             hasRollingPaper = ctx.hasRollingPaper,
+            hasRollingPaperFlag = ctx.hasRollingPaperFlag,
             openHintNoPaper = ctx.openHintNoPaper,
         })
     end)

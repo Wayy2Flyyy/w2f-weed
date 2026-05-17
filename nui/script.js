@@ -74,6 +74,28 @@ let craftAvailById = null;
 /** @type {{ budsPer: number; hasPaper: boolean; openHintNoPaper: string } | null} */
 let craftMeta = null;
 
+function readPayloadHasPaper(payload) {
+  if (!payload) return true;
+  if (payload.hasRollingPaperFlag === 1) return true;
+  if (payload.hasRollingPaperFlag === 0) return false;
+  const v = payload.hasRollingPaper;
+  if (v === true || v === 1) return true;
+  if (v === false || v === 0) return false;
+  return v !== false;
+}
+
+/** Strain row from server — robust against boolean serialization quirks in NUI. */
+function strainRowSelectable(row, budsPer) {
+  if (!row) return false;
+  const need = Number(budsPer) > 0 ? Number(budsPer) : 3;
+  if (row.selectableFlag === 1) return true;
+  if (row.selectableFlag === 0) return false;
+  if (row.selectable === true || row.selectable === 1) return true;
+  if (row.selectable === false || row.selectable === 0) return false;
+  const n = Number(row.budCount);
+  return Number.isFinite(n) && n >= need;
+}
+
 function getParentResourceNameSafe() {
   try {
     if (typeof window.GetParentResourceName === 'function')
@@ -121,7 +143,7 @@ function openRollingUi(payload) {
     craftAvailById = {};
     craftMeta = {
       budsPer: Number(payload.budsPerJoint) > 0 ? Number(payload.budsPerJoint) : 3,
-      hasPaper: payload.hasRollingPaper !== false,
+      hasPaper: readPayloadHasPaper(payload),
       openHintNoPaper: payload.openHintNoPaper || '',
     };
     if (Array.isArray(payload.strains)) {
@@ -146,7 +168,9 @@ function openRollingUi(payload) {
   }
 
   if (gameMode === 'craft' && craftAvailById) {
-    const ok = ALL_STRAINS.filter((s) => craftAvailById[s.id]?.selectable);
+    const ok = ALL_STRAINS.filter((s) =>
+      strainRowSelectable(craftAvailById[s.id], craftMeta.budsPer)
+    );
     if (ok.length === 1) selectStrain(ok[0]);
   }
 }
@@ -355,12 +379,15 @@ function buildStrainGrid() {
       ? filteredStrains
       : ALL_STRAINS;
   list.forEach((s) => {
+    const budsPer = craftMeta ? craftMeta.budsPer : 3;
     const row = craftAvailById ? craftAvailById[s.id] : null;
     const disabledCraft =
-      gameMode === 'craft' && (!row || row.selectable !== true);
+      gameMode === 'craft' && !strainRowSelectable(row, budsPer);
+    const paperNote =
+      gameMode === 'craft' && craftMeta && !craftMeta.hasPaper ? ' · need rolling papers to finish' : '';
     const stashLine =
       gameMode === 'craft' && craftMeta && row
-        ? `<div class="strain-stash">Stock: ${row.budCount} buds · rolls need ${craftMeta.budsPer} + papers</div>`
+        ? `<div class="strain-stash">Stock: ${Number(row.budCount) || 0} buds · rolls need ${craftMeta.budsPer}${paperNote}</div>`
         : '';
 
     const card = document.createElement('div');
@@ -382,11 +409,15 @@ function buildStrainGrid() {
     card.addEventListener('click', () => {
       if (gameMode === 'craft') {
         const r = craftAvailById && craftAvailById[s.id];
-        if (!r || r.selectable !== true) {
+        const budsPer = craftMeta ? craftMeta.budsPer : 3;
+        if (!strainRowSelectable(r, budsPer)) {
           if (r && r.blockedHint) toast(r.blockedHint);
           else if (craftMeta && craftMeta.openHintNoPaper)
             toast(craftMeta.openHintNoPaper);
           return;
+        }
+        if (craftMeta && !craftMeta.hasPaper) {
+          toast(craftMeta.openHintNoPaper || 'You need rolling papers to collect a joint.');
         }
       }
       selectStrain(s);

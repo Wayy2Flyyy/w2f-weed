@@ -40,6 +40,7 @@ local Translations = {
     ['searching_shipment'] = 'Searching for shipment...',
     ['search_cancelled'] = 'Search cancelled.',
     ['shipment_search_progress'] = 'You search the area… %d / %d.',
+    ['shipment_search_same_spot'] = 'You already searched here. Move to a different spot in the zone.',
     ['shipment_search_hint'] = 'The stash won\'t show up on the first try — keep searching this zone.',
     ['shipment_completed'] = 'Shipment found! Check your inventory.',
     ['shipment_expired'] = 'Your shipment lead expired. The drop is gone.',

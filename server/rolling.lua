@@ -1,5 +1,18 @@
 --- Rolling minigame: server validation + rewards (ox_inventory).
 
+---@param src number
+---@param itemName string
+---@return integer
+local function countItem(src, itemName)
+    if not itemName or itemName == '' then return 0 end
+    local n = exports.ox_inventory:GetItemCount(src, itemName) or 0
+    if n > 0 then return n end
+    local viaSearch = exports.ox_inventory:Search(src, 'count', itemName)
+    if type(viaSearch) == 'number' then return viaSearch end
+    --- Search returns the count directly when one item name is passed.
+    return n
+end
+
 local function jointItemForStrain(strainId)
     local map = Config.RollingMinigame and Config.RollingMinigame.JointItems
     if not map or not strainId then return nil end
@@ -24,28 +37,32 @@ local function craftContext(src)
     local paperItem = Config.RollingMinigame.PaperItem
     local needPaper = Config.RollingMinigame.RequirePaper == true
     local paperCount = (not needPaper or not paperItem) and 999
-        or (exports.ox_inventory:GetItemCount(src, paperItem) or 0)
+        or countItem(src, paperItem)
     local papersPer = tonumber(Config.RollingMinigame.PapersPerJoint) or 1
     if papersPer < 1 then papersPer = 1 end
     local hasPaper = not needPaper or paperCount >= papersPer
 
     local strains = {}
     for id, def in pairs(cat) do
-        local n = exports.ox_inventory:GetItemCount(src, def.budItem) or 0
-        local selectable = hasPaper and n >= needBuds
+        local budKey = def.budItem
+        local n = budKey and countItem(src, budKey) or 0
+        --- UI: only grey out when not enough bud — papers are checked again at craft time.
+        local selectable = n >= needBuds
         local blockedHint
-        if not selectable then
-            if not hasPaper then
-                blockedHint = Locale('rolling_blocked_need_papers')
-            else
-                blockedHint = string.format(Locale('rolling_blocked_need_buds'), needBuds, n)
-            end
+        if n < needBuds then
+            blockedHint = string.format(Locale('rolling_blocked_need_buds'), needBuds, n)
+        elseif needPaper and not hasPaper then
+            blockedHint = Locale('rolling_blocked_need_papers')
         end
         strains[#strains + 1] = {
             id = id,
             label = def.label or id,
             budCount = n,
             selectable = selectable,
+            --- 1/0 so NUI always parses availability (some JSON paths mishandle booleans).
+            selectableFlag = selectable and 1 or 0,
+            canFinishRoll = hasPaper and selectable,
+            canFinishFlag = (hasPaper and selectable) and 1 or 0,
             blockedHint = blockedHint,
         }
     end
@@ -61,6 +78,7 @@ local function craftContext(src)
         budsPerJoint = needBuds,
         papersPerJoint = papersPer,
         hasRollingPaper = hasPaper,
+        hasRollingPaperFlag = hasPaper and 1 or 0,
         openHintNoPaper = Locale('rolling_open_need_papers'),
     }
 end
@@ -120,12 +138,12 @@ lib.callback.register('w2f-weed:server:rollingMinigameReward', function(source, 
             break
         end
     end
-    if not rowMatch or rowMatch.selectable ~= true then
+    if not rowMatch or (rowMatch.budCount or 0) < needBuds then
         return { ok = false, reason = 'no_buds' }
     end
 
     local budItem = strainCfg.budItem
-    if (exports.ox_inventory:GetItemCount(src, budItem) or 0) < needBuds then
+    if countItem(src, budItem) < needBuds then
         return { ok = false, reason = 'no_buds' }
     end
 
@@ -134,7 +152,7 @@ lib.callback.register('w2f-weed:server:rollingMinigameReward', function(source, 
     if papersPer < 1 then papersPer = 1 end
 
     if Config.RollingMinigame.RequirePaper and paperItem then
-        if (exports.ox_inventory:GetItemCount(src, paperItem) or 0) < papersPer then
+        if countItem(src, paperItem) < papersPer then
             return { ok = false, reason = 'no_papers' }
         end
     end

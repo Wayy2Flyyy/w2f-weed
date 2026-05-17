@@ -1,7 +1,7 @@
 --- Generate a unique shipment ID using timestamp and random suffix
 ---@return string
 function W2F.GenerateShipmentId()
-    return ('SHIP_%s_%s'):format(os.time(), math.random(1000, 9999))
+    return ('SHIP_%s_%s'):format(W2F.GetTimestamp(), math.random(1000, 9999))
 end
 
 --- Round a number to the nearest multiple
@@ -30,6 +30,17 @@ function W2F.Clamp(value, min, max)
     if v < lo then return lo end
     if v > hi then return hi end
     return v
+end
+
+--- Horizontal distance between two points (ignores Z).
+---@param a vector3|{ x: number, y: number }
+---@param b vector3|{ x: number, y: number }
+---@return number
+function W2F.FlatDistance(a, b)
+    if not a or not b then return math.huge end
+    local dx = a.x - b.x
+    local dy = a.y - b.y
+    return math.sqrt(dx * dx + dy * dy)
 end
 
 --- Check if a value exists in a table
@@ -88,24 +99,27 @@ function W2F.GetShipmentTier(loyaltyLevel)
     return level.shipmentTier
 end
 
---- Get the current unix timestamp
+--- Get the current unix timestamp (server: os.time; client: no os lib — use cloud time).
 ---@return integer
 function W2F.GetTimestamp()
-    return os.time()
+    if os and os.time then
+        return os.time()
+    end
+    return GetCloudTimeAsInt()
 end
 
 --- Check if a timestamp has expired
 ---@param expiresAt integer
 ---@return boolean
 function W2F.HasExpired(expiresAt)
-    return os.time() >= expiresAt
+    return W2F.GetTimestamp() >= expiresAt
 end
 
 --- Calculate remaining seconds from an expiry timestamp
 ---@param expiresAt integer
 ---@return integer
 function W2F.GetTimeRemaining(expiresAt)
-    local remaining = expiresAt - os.time()
+    local remaining = expiresAt - W2F.GetTimestamp()
     return remaining > 0 and remaining or 0
 end
 

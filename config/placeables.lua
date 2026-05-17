@@ -86,7 +86,7 @@ Config.Placeables = {
     -- 'prop' is a model name joaat()-able.
     -- Per-item 'placement' overrides the defaults above.
     --
-    -- NOTE: empty_planter_box / full_planter_box / plant_pot / soil_bag are
+    -- NOTE: empty_planter_box / plant_pot / soil_bag are
     -- intentionally NOT in this list. They are owned by the planter
     -- growth system (see config/planters.lua) which handles their
     -- placement, soil-add, planting, growth, and harvest flows.

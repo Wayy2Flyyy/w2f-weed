@@ -19,7 +19,7 @@ Config.Planters = {
     -- ox_inventory item names that map to planters / supplies.
     Items = {
         EmptyPlanter      = 'empty_planter_box',
-        FilledMarker      = 'full_planter_box',  -- legacy item id; not required to use
+        FilledMarker      = 'empty_planter_box',  -- visual “filled” state uses Props.Filled; no separate item
         SoilBag           = 'soil_bag',
         TrimmingScissors  = 'trimming_scissors',
     },

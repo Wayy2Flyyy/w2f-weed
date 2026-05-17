@@ -49,8 +49,12 @@ RegisterNetEvent('w2f-weed:server:completeShipment', function()
     if not success then
         if reason == 'distance' then
             W2F.SecurityLog('Completion exploit attempt', { source = src, citizenid = citizenid })
+            lib.notify(src, { title = 'Shipment', description = Locale('shipment_complete_failed'), type = 'error' })
+        elseif reason == 'same_spot' then
+            lib.notify(src, { title = 'Shipment', description = Locale('shipment_search_same_spot'), type = 'error' })
+        else
+            lib.notify(src, { title = 'Shipment', description = Locale('shipment_complete_failed'), type = 'error' })
         end
-        lib.notify(src, { title = 'Shipment', description = Locale('shipment_complete_failed'), type = 'error' })
     elseif reason == 'progress' then
         -- Progress notify is sent from CompleteShipment; nothing else to do
     end

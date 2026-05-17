@@ -50,6 +50,14 @@ function W2F.SearchShipment()
         return
     end
 
+    local minSep = tonumber(Config.Shipments.MinSearchSpotSeparation) or 0.0
+    if minSep > 0 and activeShipment.lastSearchSpot then
+        if W2F.FlatDistance(playerCoords, activeShipment.lastSearchSpot) < minSep then
+            lib.notify({ title = 'Shipment', description = Locale('shipment_search_same_spot'), type = 'error' })
+            return
+        end
+    end
+
     local success = lib.progressBar({
         duration = 8000,
         label = Locale('searching_shipment'),
@@ -114,6 +122,19 @@ end
 function W2F.HasActiveShipment()
     return activeShipment ~= nil
 end
+
+RegisterNetEvent('w2f-weed:client:shipmentSearchProgress', function(data)
+    if not activeShipment or type(data) ~= 'table' then return end
+    if data.lastSearchSpot then
+        activeShipment.lastSearchSpot = data.lastSearchSpot
+    end
+    if data.searchesDone ~= nil then
+        activeShipment.searchesDone = data.searchesDone
+    end
+    if data.searchesRequired ~= nil then
+        activeShipment.searchesRequired = data.searchesRequired
+    end
+end)
 
 RegisterNetEvent('w2f-weed:client:setShipment', function(data)
     if not data then return end

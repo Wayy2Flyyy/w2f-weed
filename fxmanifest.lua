@@ -2,7 +2,7 @@ fx_version 'cerulean'
 game 'gta5'
 lua54 'yes'
 
-author 'Wayy2Flyyy Development'
+author 'wayy2flyyy'
 description 'Qbox + ox foundation for w2f-weed (seeds, contact, shipments, placeables, planter growth).'
 version '0.2.0'
 

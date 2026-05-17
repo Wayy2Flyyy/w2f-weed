@@ -1,3 +1,12 @@
+--- Random map offset for the area blip (keeps the true coords inside the circle).
+---@param radius number|nil
+---@return integer, integer
+local function randomAreaOffset(radius)
+    local r = radius or Config.Shipments.AreaRadius or 14.0
+    local maxOff = math.max(2, math.floor(r * 0.30))
+    return math.random(-maxOff, maxOff), math.random(-maxOff, maxOff)
+end
+
 --- Create a new shipment for a player
 ---@param src number
 ---@param citizenid string
@@ -72,8 +81,7 @@ function W2F.CreateShipment(src, citizenid)
     W2F.Cooldowns[citizenid] = now
 
     -- Offset area center for the hint so exact location is not revealed
-    local offsetX = math.random(-50, 50)
-    local offsetY = math.random(-50, 50)
+    local offsetX, offsetY = randomAreaOffset(location.radius)
     local areaCenter = vector3(
         location.coords.x + offsetX,
         location.coords.y + offsetY,
@@ -88,6 +96,7 @@ function W2F.CreateShipment(src, citizenid)
         expiresAt = shipment.expiresAt,
         searchesDone = 0,
         searchesRequired = shipment.searchesRequired,
+        lastSearchSpot = nil,
     }
 
     TriggerClientEvent('w2f-weed:client:setShipment', src, clientData)
@@ -127,14 +136,35 @@ function W2F.CompleteShipment(src, citizenid)
         return false, 'distance'
     end
 
+    local minSep = tonumber(Config.Shipments.MinSearchSpotSeparation) or 0.0
+    if minSep > 0 and shipment.lastSearchSpot then
+        local ped = GetPlayerPed(src)
+        if ped and ped ~= 0 then
+            local pcoords = GetEntityCoords(ped)
+            if W2F.FlatDistance(pcoords, shipment.lastSearchSpot) < minSep then
+                return false, 'same_spot'
+            end
+        end
+    end
+
     shipment.searchesDone = (shipment.searchesDone or 0) + 1
     local required = math.max(1, shipment.searchesRequired or 1)
 
     if shipment.searchesDone < required then
+        local ped = GetPlayerPed(src)
+        if ped and ped ~= 0 then
+            local pcoords = GetEntityCoords(ped)
+            shipment.lastSearchSpot = vector3(pcoords.x, pcoords.y, pcoords.z)
+        end
         lib.notify(src, {
             title = 'Shipment',
             description = Locale('shipment_search_progress', shipment.searchesDone, required),
             type = 'inform'
+        })
+        TriggerClientEvent('w2f-weed:client:shipmentSearchProgress', src, {
+            lastSearchSpot = shipment.lastSearchSpot,
+            searchesDone = shipment.searchesDone,
+            searchesRequired = required,
         })
         return true, 'progress'
     end
@@ -212,17 +242,18 @@ function W2F.GetActiveShipmentData(citizenid)
     if W2F.HasExpired(shipment.expiresAt) then return nil end
 
     local location = W2F.GetLocationById(shipment.locationId)
-    local offsetX = math.random(-50, 50)
-    local offsetY = math.random(-50, 50)
+    local r = location and location.radius or shipment.radius or Config.Shipments.AreaRadius
+    local offsetX, offsetY = randomAreaOffset(r)
 
     return {
         hint = shipment.hint,
         area = vector3(shipment.coords.x + offsetX, shipment.coords.y + offsetY, shipment.coords.z),
         coords = shipment.coords,
-        radius = location and location.radius or Config.Shipments.AreaRadius,
+        radius = r,
         expiresAt = shipment.expiresAt,
         searchesDone = shipment.searchesDone or 0,
         searchesRequired = shipment.searchesRequired or 1,
+        lastSearchSpot = shipment.lastSearchSpot,
     }
 end
 
