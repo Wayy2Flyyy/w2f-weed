@@ -1,31 +1,42 @@
-# w2f-weed — installation
+# w2f-weed installation
 
-[Qbox](https://docs.qbox.re/) (`qbx_core`) resource: contact shipments, loyalty, planters, placeables, optional store hooks, and a rolling-station NUI.
+Qbox (`qbx_core`) weed operation resource for contact shipments, loyalty, planters, placeables, optional shop hooks, and the rolling-station NUI.
 
-## Before you start
+## Quick Start
 
-| Step | Action |
-|------|--------|
-| Database | Run `sql/install.sql` once (same DB as oxmysql). |
-| Folder name | Keep the resource folder named `w2f-weed`. |
-| ox_inventory | Add the item blocks below to `data/items.lua`, then add/merge shops in `data/shops.lua`. Optional icons: **`install_assets/README.md`**. |
-| Restart order | After editing items or shops: `restart ox_inventory`, then `restart w2f-weed`. |
+1. Put the folder in `resources/[w2f]/w2f-weed` and keep the resource name exactly `w2f-weed`.
+2. Run `sql/install.sql` once in the same database used by `oxmysql`.
+3. Paste the full `items.lua` block below inside `resources/[ox]/ox_inventory/data/items.lua` inside the `return { ... }` table.
+4. Paste or merge the `shops.lua` snippets below inside `resources/[ox]/ox_inventory/data/shops.lua` inside the `return { ... }` table.
+5. Start resources in this order:
 
-Dependency start order:
+```cfg
+ensure oxmysql
+ensure ox_lib
+ensure ox_inventory
+ensure ox_target
+ensure qbx_core
+ensure w2f-weed
+```
 
-`ensure oxmysql` → `ensure ox_lib` → `ensure ox_inventory` → `ensure ox_target` → `ensure qbx_core` → `ensure w2f-weed`
+After editing `items.lua` or `shops.lua`, run:
 
-Ensure player identifiers match your framework (`citizenid` is configured in `config/main.lua`).
-
----
+```cfg
+restart ox_inventory
+restart w2f-weed
+```
 
 ## ox_inventory `items.lua`
 
-Append the blocks below inside your `items.lua` export table (`return { … }`). Do not duplicate keys that already ship with your preset.
+Paste this whole block into `data/items.lua` inside the main `return { ... }` table.
 
-Rolling / tray consumables normally sit beside other smokables:
+Do not duplicate item keys that already exist. If your server already has `rolling_papers`, `joint`, or another shared item, keep one version only. The `rolling_tray` item must keep `client.event = 'w2f-weed:client:startRollingMinigameFromTray'`.
 
 ```lua
+    -- ======================================================================
+    -- W2F WEED - Rolling supplies
+    -- ======================================================================
+
     ['rolling_papers'] = {
         label = 'Rolling Papers',
         weight = 5,
@@ -53,18 +64,10 @@ Rolling / tray consumables normally sit beside other smokables:
         close = true,
         description = 'Outer wraps for rolling blunt cannons.',
     },
-```
 
-**`joint`** / **`rolling_papers`** may already exist — **do not duplicate keys**. **`rolling_tray`** must keep the **`client.event`** above exactly.
-
----
-
-### `WEED OPERATION — Seeds (w2f-weed)`
-
-```lua
-    -- ──────────────────────────────────────────────────────────────────
-    -- WEED OPERATION — Seeds  (w2f-weed)
-    -- ──────────────────────────────────────────────────────────────────
+    -- ======================================================================
+    -- W2F WEED - Seeds
+    -- ======================================================================
 
     ['purple_runtz_seed'] = {
         label = 'Purple Runtz Seed',
@@ -100,16 +103,10 @@ Rolling / tray consumables normally sit beside other smokables:
         stack = true,
         description = 'A rare seed variety. Exceptional traits.',
     },
-```
 
----
-
-### `WEED OPERATION — Buds — Joints (w2f-weed)` (buds & batches only)
-
-```lua
-    -- ──────────────────────────────────────────────────────────────────
-    -- WEED OPERATION — Buds — Joints (w2f-weed)
-    -- ──────────────────────────────────────────────────────────────────
+    -- ======================================================================
+    -- W2F WEED - Buds and bud batches
+    -- ======================================================================
 
     ['purple_runtz_bud'] = {
         label = 'Purple Runtz Bud',
@@ -173,16 +170,11 @@ Rolling / tray consumables normally sit beside other smokables:
         stack = true,
         description = 'A batch of exotic processed buds.',
     },
-```
 
-There is **no** `batch_purple_palm_tree_delight_bud` in stock data — add your own batch key only if scripts reference it.
-
----
-
-### `Weed Joints` (strain keyed joints · used by **`config/rolling.lua` → `JointItems`**)
-
-```lua
--- Weed Joints
+    -- ======================================================================
+    -- W2F WEED - Joints
+    -- Used by config/rolling.lua -> Config.RollingMinigame.JointItems
+    -- ======================================================================
 
     ['joint_exotic_weed'] = {
         label = 'Exotic Weed Joint',
@@ -196,7 +188,7 @@ There is **no** `batch_purple_palm_tree_delight_bud` in stock data — add your 
             prop = {
                 model = `p_cs_joint_02`,
                 pos = vec3(0.015, 0.015, 0.0),
-                rot = vec3(0.0, 0.0, 0.0)
+                rot = vec3(0.0, 0.0, 0.0),
             },
             usetime = 4500,
         },
@@ -214,7 +206,7 @@ There is **no** `batch_purple_palm_tree_delight_bud` in stock data — add your 
             prop = {
                 model = `p_cs_joint_02`,
                 pos = vec3(0.015, 0.015, 0.0),
-                rot = vec3(0.0, 0.0, 0.0)
+                rot = vec3(0.0, 0.0, 0.0),
             },
             usetime = 4500,
         },
@@ -232,7 +224,7 @@ There is **no** `batch_purple_palm_tree_delight_bud` in stock data — add your 
             prop = {
                 model = `p_cs_joint_02`,
                 pos = vec3(0.015, 0.015, 0.0),
-                rot = vec3(0.0, 0.0, 0.0)
+                rot = vec3(0.0, 0.0, 0.0),
             },
             usetime = 4500,
         },
@@ -250,7 +242,7 @@ There is **no** `batch_purple_palm_tree_delight_bud` in stock data — add your 
             prop = {
                 model = `p_cs_joint_02`,
                 pos = vec3(0.015, 0.015, 0.0),
-                rot = vec3(0.0, 0.0, 0.0)
+                rot = vec3(0.0, 0.0, 0.0),
             },
             usetime = 4500,
         },
@@ -268,19 +260,15 @@ There is **no** `batch_purple_palm_tree_delight_bud` in stock data — add your 
             prop = {
                 model = `p_cs_joint_02`,
                 pos = vec3(0.015, 0.015, 0.0),
-                rot = vec3(0.0, 0.0, 0.0)
+                rot = vec3(0.0, 0.0, 0.0),
             },
             usetime = 4500,
         },
     },
-```
 
----
-
-### Crest Leaf Blunt Cannon Joints
-
-```lua
-    -- Crest Leaf Blunt Cannon Joints
+    -- ======================================================================
+    -- W2F WEED - Blunt cannons
+    -- ======================================================================
 
     ['blunt_exotic_weed'] = {
         label = 'Exotic Weed Blunt Cannon',
@@ -289,13 +277,8 @@ There is **no** `batch_purple_palm_tree_delight_bud` in stock data — add your 
         close = true,
         description = 'A premium crest-leaf blunt cannon packed with exotic weed.',
         client = {
-            status = {
-                stress = -150000,
-            },
-            anim = {
-                dict = 'amb@world_human_aa_smoke@male@idle_a',
-                clip = 'idle_c',
-            },
+            status = { stress = -150000 },
+            anim = { dict = 'amb@world_human_aa_smoke@male@idle_a', clip = 'idle_c' },
             prop = {
                 model = `p_cs_joint_02`,
                 pos = vec3(0.015, 0.015, 0.0),
@@ -312,13 +295,8 @@ There is **no** `batch_purple_palm_tree_delight_bud` in stock data — add your 
         close = true,
         description = 'A luxury crest-leaf blunt cannon with a smooth purple palm finish.',
         client = {
-            status = {
-                stress = -165000,
-            },
-            anim = {
-                dict = 'amb@world_human_aa_smoke@male@idle_a',
-                clip = 'idle_c',
-            },
+            status = { stress = -165000 },
+            anim = { dict = 'amb@world_human_aa_smoke@male@idle_a', clip = 'idle_c' },
             prop = {
                 model = `p_cs_joint_02`,
                 pos = vec3(0.015, 0.015, 0.0),
@@ -335,13 +313,8 @@ There is **no** `batch_purple_palm_tree_delight_bud` in stock data — add your 
         close = true,
         description = 'A balanced crest-leaf blunt cannon rolled with premium hybrid flower.',
         client = {
-            status = {
-                stress = -135000,
-            },
-            anim = {
-                dict = 'amb@world_human_aa_smoke@male@idle_a',
-                clip = 'idle_c',
-            },
+            status = { stress = -135000 },
+            anim = { dict = 'amb@world_human_aa_smoke@male@idle_a', clip = 'idle_c' },
             prop = {
                 model = `p_cs_joint_02`,
                 pos = vec3(0.015, 0.015, 0.0),
@@ -358,13 +331,8 @@ There is **no** `batch_purple_palm_tree_delight_bud` in stock data — add your 
         close = true,
         description = 'A loud crest-leaf blunt cannon rolled with heavy skunk flower.',
         client = {
-            status = {
-                stress = -145000,
-            },
-            anim = {
-                dict = 'amb@world_human_aa_smoke@male@idle_a',
-                clip = 'idle_c',
-            },
+            status = { stress = -145000 },
+            anim = { dict = 'amb@world_human_aa_smoke@male@idle_a', clip = 'idle_c' },
             prop = {
                 model = `p_cs_joint_02`,
                 pos = vec3(0.015, 0.015, 0.0),
@@ -381,13 +349,8 @@ There is **no** `batch_purple_palm_tree_delight_bud` in stock data — add your 
         close = true,
         description = 'A sweet purple crest-leaf blunt cannon with premium Purple Runtz flower.',
         client = {
-            status = {
-                stress = -175000,
-            },
-            anim = {
-                dict = 'amb@world_human_aa_smoke@male@idle_a',
-                clip = 'idle_c',
-            },
+            status = { stress = -175000 },
+            anim = { dict = 'amb@world_human_aa_smoke@male@idle_a', clip = 'idle_c' },
             prop = {
                 model = `p_cs_joint_02`,
                 pos = vec3(0.015, 0.015, 0.0),
@@ -396,18 +359,10 @@ There is **no** `batch_purple_palm_tree_delight_bud` in stock data — add your 
             usetime = 5500,
         },
     },
-```
 
----
-
-### `WEED OPERATION — Equipment (w2f-weed)`
-
-Placeables (**`watering_can`**, **`fertilizer_basic`**, **`grow_light`**, **`drying_rack`**, **`weed_bench`**) **must** use **`w2f-weed:client:startPlaceablePlacement`**. Planters use **`startPlanterPlacement`**.
-
-```lua
-    -- ──────────────────────────────────────────────────────────────────
-    -- WEED OPERATION — Equipment  (w2f-weed)
-    -- ──────────────────────────────────────────────────────────────────
+    -- ======================================================================
+    -- W2F WEED - Planters, supplies, tools, and placeables
+    -- ======================================================================
 
     ['empty_planter_box'] = {
         label = 'Empty Planter Box',
@@ -424,6 +379,7 @@ Placeables (**`watering_can`**, **`fertilizer_basic`**, **`grow_light`**, **`dry
         label = 'Plant Pot',
         weight = 500,
         stack = true,
+        consume = 0,
         description = 'A wooden plant pot. USE to deploy as a planter.',
         client = {
             event = 'w2f-weed:client:startPlanterPlacement',
@@ -434,13 +390,14 @@ Placeables (**`watering_can`**, **`fertilizer_basic`**, **`grow_light`**, **`dry
         label = 'Soil Bag',
         weight = 1000,
         stack = true,
-        description = 'A bag of soil. Use the "Add Soil" interaction on an empty planter.',
+        description = 'A bag of soil. Use the Add Soil interaction on an empty planter.',
     },
 
     ['watering_can'] = {
         label = 'Watering Can',
         weight = 750,
         stack = true,
+        consume = 0,
         description = 'A watering can for plant care.',
         client = {
             event = 'w2f-weed:client:startPlaceablePlacement',
@@ -451,6 +408,7 @@ Placeables (**`watering_can`**, **`fertilizer_basic`**, **`grow_light`**, **`dry
         label = 'Basic Fertilizer',
         weight = 2000,
         stack = true,
+        consume = 0,
         description = 'Standard plant nutrients.',
         client = {
             event = 'w2f-weed:client:startPlaceablePlacement',
@@ -468,6 +426,7 @@ Placeables (**`watering_can`**, **`fertilizer_basic`**, **`grow_light`**, **`dry
         label = 'Grow Light',
         weight = 4000,
         stack = true,
+        consume = 0,
         description = 'Artificial lighting for indoor growing.',
         client = {
             event = 'w2f-weed:client:startPlaceablePlacement',
@@ -478,6 +437,7 @@ Placeables (**`watering_can`**, **`fertilizer_basic`**, **`grow_light`**, **`dry
         label = 'Drying Rack',
         weight = 5000,
         stack = false,
+        consume = 0,
         description = 'Used to dry harvested plants.',
         client = {
             event = 'w2f-weed:client:startPlaceablePlacement',
@@ -488,6 +448,7 @@ Placeables (**`watering_can`**, **`fertilizer_basic`**, **`grow_light`**, **`dry
         label = 'Weed Work Bench',
         weight = 12000,
         stack = false,
+        consume = 0,
         description = 'A sturdy bench for trimming and processing. USE to place.',
         client = {
             event = 'w2f-weed:client:startPlaceablePlacement',
@@ -516,178 +477,167 @@ Placeables (**`watering_can`**, **`fertilizer_basic`**, **`grow_light`**, **`dry
     },
 ```
 
----
+## ox_inventory `shops.lua`
 
-## ox_inventory `shops.lua` (paste into the shops table)
+Paste these shop entries into `data/shops.lua` inside the main `return { ... }` table.
 
-## SmokeOnTheWater (retail — papers, tray, wraps, joints, blunts)
+If your server already has a `YouTool` shop, merge only the inventory/target lines you need. Do not register the same shop key twice.
 
-Example coords/targets:
+### SmokeOnTheWater - Retail Shop
 
-- Location: `vec3(-1172.18, -1571.77, 3.66)`
-- Target: `heading` 305°, `distance` ~1.85**
-
-```lua
-	--- Vespucci — joints + blunt cannons (w2f-weed items).
-	SmokeOnTheWater = {
-		name = 'Smoke on the Water',
-		blip = {
-			id = 59, colour = 2, scale = 0.75,
-		},
-		inventory = {
-			{ name = 'rolling_papers',                     price = 12 },
-			{ name = 'rolling_tray',                       price = 78 },
-			{ name = 'blunt_leafs',                        price = 18 },
-			{ name = 'soil_bag',                           price = 2000 },
-			{ name = 'watering_can',                       price = 200 },
-			{ name = 'fertilizer_basic',                   price = 250 },
-			{ name = 'fertilizer_premium',                 price = 500 },
-			{ name = 'empty_baggies',                      price = 50 },
-			{ name = 'digital_scale',                      price = 300 },
-			{ name = 'trimming_scissors',                  price = 100 },
-			{ name = 'joint',                               price = 22 },
-			{ name = 'joint_hybrid',                        price = 28 },
-			{ name = 'joint_exotic_weed',                   price = 32 },
-			{ name = 'joint_skunk',                         price = 36 },
-			{ name = 'joint_purple_palm_tree_delight',      price = 42 },
-			{ name = 'joint_purple_runtz',                  price = 48 },
-			{ name = 'blunt_hybrid',                        price = 65 },
-			{ name = 'blunt_skunk',                         price = 72 },
-			{ name = 'blunt_exotic_weed',                   price = 78 },
-			{ name = 'blunt_purple_palm_tree_delight',      price = 88 },
-			{ name = 'blunt_purple_runtz',                  price = 95 },
-		},
-		locations = {
-			vec3(-1172.18, -1571.77, 3.66),
-		},
-		targets = {
-			{ loc = vec3(-1172.18, -1571.77, 3.66), length = 0.65, width = 0.55, heading = 305.0, minZ = 3.48, maxZ = 4.18, distance = 1.85 },
-		},
-	},
-```
-
-This shop stays open without loyalty gates. Selling `rolling_tray` here mirrors the snippet in `items.lua`: the tray must trigger `w2f-weed:client:startRollingMinigameFromTray`.
-
-
----
-
-## SmokeOnTheWaterContractor (loyalty-gated planters + bench)
-
-Keep this shop key as `SmokeOnTheWaterContractor` (used by `server/ox_inventory_shop.lua`). Align coordinates with `config/loyalty.lua` → `Config.Loyalty.ContractorSupplies`.
-
-- Example centre: `vec3(-1227.56, -1406.1, 3.18)`
+Open retail shop for rolling supplies, growing supplies, joints, and blunts.
 
 ```lua
-	--- Requires w2f-weed contact loyalty ≥ Config.Loyalty.ContractorSuppliesMinLoyalty.
-	-- Align coords with `w2f-weed` Config.Loyalty.ContractorSupplies.Coords (blip + gate).
-	SmokeOnTheWaterContractor = {
-		name = 'Contractor supplies',
-		icon = 'fa-solid fa-toolbox',
-		inventory = {
-			{ name = 'empty_planter_box', price = 4200 },
-			{ name = 'weed_bench',         price = 6200 },
-		},
-		locations = {
-			vec3(-1227.56, -1406.1, 3.18),
-		},
-		targets = {
-			-- `ped`: ox_inventory spawns NPC + ox_target on entity (shop open still gated by w2f-weed loyalty hooks).
-			{
-				ped = `s_m_y_construct_01`,
-				loc = vec3(-1227.56, -1406.1, 3.18),
-				heading = 305.0,
-				scenario = 'WORLD_HUMAN_CLIPBOARD',
-				distance = 2.0,
-			},
-		},
-	},
+    -- Vespucci - joints + blunt cannons (w2f-weed items).
+    SmokeOnTheWater = {
+        name = 'Smoke on the Water',
+        blip = {
+            id = 59, colour = 2, scale = 0.75,
+        },
+        inventory = {
+            { name = 'rolling_papers', price = 12 },
+            { name = 'rolling_tray', price = 78 },
+            { name = 'blunt_leafs', price = 18 },
+            { name = 'soil_bag', price = 2000 },
+            { name = 'watering_can', price = 200 },
+            { name = 'fertilizer_basic', price = 250 },
+            { name = 'fertilizer_premium', price = 500 },
+            { name = 'empty_baggies', price = 50 },
+            { name = 'digital_scale', price = 300 },
+            { name = 'trimming_scissors', price = 100 },
+            { name = 'joint_hybrid', price = 28 },
+            { name = 'joint_exotic_weed', price = 32 },
+            { name = 'joint_skunk', price = 36 },
+            { name = 'joint_purple_palm_tree_delight', price = 42 },
+            { name = 'joint_purple_runtz', price = 48 },
+            { name = 'blunt_hybrid', price = 65 },
+            { name = 'blunt_skunk', price = 72 },
+            { name = 'blunt_exotic_weed', price = 78 },
+            { name = 'blunt_purple_palm_tree_delight', price = 88 },
+            { name = 'blunt_purple_runtz', price = 95 },
+        },
+        locations = {
+            vec3(-1172.18, -1571.77, 3.66),
+        },
+        targets = {
+            { loc = vec3(-1172.18, -1571.77, 3.66), length = 0.65, width = 0.55, heading = 305.0, minZ = 3.48, maxZ = 4.18, distance = 1.85 },
+        },
+    },
 ```
 
-Players need loyalty ≥ `Config.Loyalty.ContractorSuppliesMinLoyalty` (default `3`) before buys register.
+### SmokeOnTheWaterContractor - Loyalty Gated Shop
 
----
+This shop key must stay `SmokeOnTheWaterContractor`. It is used by `server/ox_inventory_shop.lua`.
 
-## YouTool — merge weed supply lines into your shop
+Players need loyalty >= `Config.Loyalty.ContractorSuppliesMinLoyalty` (default `3`) before contractor buys register.
 
-Use the example below as a merged `inventory`/`targets` snippet; tweak coordinates when you customise your map packs.
-
+Keep these coordinates aligned with `config/loyalty.lua` -> `Config.Loyalty.ContractorSupplies`.
 
 ```lua
-	YouTool = {
-		name = 'YouTool',
-		blip = {
-			id = 402, colour = 69, scale = 0.8
-		}, inventory = {
-			{ name = 'lockpick',             price = 75 },
-			{ name = 'WEAPON_FLASHLIGHT',    price = 150 },
-			{ name = 'repairkit',              price = 350 },
-			{ name = 'screwdriverset',       price = 225 },
-			{ name = 'small_backpack',       price = 5000 },
-			{ name = 'medium_backpack',      price = 12000 },
-			{ name = 'large_backpack',       price = 30000 },
-			{ name = 'duffle_bag',           price = 40000 },
-			{ name = 'soil_bag',             price = 2000 },
-			{ name = 'watering_can',          price = 200 },
-			{ name = 'fertilizer_basic',      price = 250 },
-			{ name = 'fertilizer_premium',    price = 500 },
-			{ name = 'empty_baggies',        price = 50 },
-			{ name = 'digital_scale',        price = 300 },
-			{ name = 'trimming_scissors',    price = 100 },
-			{ name = 'shovel',               price = 700 },
-			{ name = 'toolbox',              price = 450 },
-			{ name = 'power_drill',           price = 1200 },
-			{ name = 'pliers',                price = 85 },
-			{ name = 'adjustable_wrench',     price = 120 },
-			{ name = 'screwdriver',           price = 40 },
-		}, locations = {
-			vec3(2748.0, 3473.0, 55.67),
-			vec3(342.99, -1298.26, 32.51)
-		}, targets = {
-			{ loc = vec3(2746.8, 3473.13, 55.67), length = 0.6, width = 3.0, heading = 65.0, minZ = 55.0, maxZ = 56.8, distance = 3.0 },
-			{ loc = vec3(342.45, -1298.9, 32.52), length = 0.65, width = 0.55, heading = 320.0, minZ = 32.35, maxZ = 32.95, distance = 2.0 },
-		}
-	},
+    -- Requires w2f-weed contact loyalty >= Config.Loyalty.ContractorSuppliesMinLoyalty.
+    SmokeOnTheWaterContractor = {
+        name = 'Contractor supplies',
+        icon = 'fa-solid fa-toolbox',
+        inventory = {
+            { name = 'empty_planter_box', price = 4200 },
+            { name = 'weed_bench', price = 6200 },
+        },
+        locations = {
+            vec3(-1227.56, -1406.1, 3.18),
+        },
+        targets = {
+            -- ox_inventory spawns this ped and ox_target handles the shop interaction.
+            {
+                ped = `s_m_y_construct_01`,
+                loc = vec3(-1227.56, -1406.1, 3.18),
+                heading = 305.0,
+                scenario = 'WORLD_HUMAN_CLIPBOARD',
+                distance = 2.0,
+            },
+        },
+    },
 ```
 
-Merge the `inventory` lines into your existing `YouTool` entry if one already exists (never register `YouTool` twice).
+### YouTool - Optional W2F Weed Supply Lines
 
+Use this if you want common `w2f-weed` grow supplies at YouTool too. Paste these lines into your existing `YouTool.inventory` list. Do not copy a full `YouTool = { ... }` entry unless you are replacing your whole shop.
 
----
+```lua
+            { name = 'soil_bag', price = 2000 },
+            { name = 'watering_can', price = 200 },
+            { name = 'fertilizer_basic', price = 250 },
+            { name = 'fertilizer_premium', price = 500 },
+            { name = 'empty_baggies', price = 50 },
+            { name = 'digital_scale', price = 300 },
+            { name = 'trimming_scissors', price = 100 },
+```
 
-## Resource checklist
+## Item Categories At A Glance
 
-1. Place `w2f-weed` in `resources/` (keep the folder name exactly `w2f-weed`).
-2. Run `sql/install.sql` once.
-3. Ensure `ensure w2f-weed` runs after oxmysql, ox_lib, ox_inventory, ox_target, and qbx_core.
-4. Keep contractor coords aligned with `config/loyalty.lua` (`Config.Loyalty.ContractorSupplies`). The default bribe item (`Config.Bribes.Item`, commonly `purple_runtz_bud`) must exist in `items.lua`.
-5. Tune `config/rolling.lua` (`OpenItemKey`, `PaperItem`, `JointItems`, `BudsPerJoint`). Only enable `/weed_roll` via `Config.RollingMinigame.DebugCommand` when debugging.
-6. Register any packaged `.ytyp` files under `stream/` inside `fxmanifest.lua` (`data_file 'DLC_ITYP_REQUEST'`).
-7. Use `locales/en.lua` as the template when adding more locales.
+Use this list to quickly check what the resource expects.
 
-After editing `items.lua` or `shops.lua`, restart `ox_inventory`, then restart `w2f-weed` so `registerHook` in `server/ox_inventory_shop.lua` rebinds cleanly.
+```text
+Rolling supplies:
+rolling_papers, rolling_tray, blunt_leafs
 
-Retail `SmokeOnTheWater` has no loyalty gate; `SmokeOnTheWaterContractor` waits until loyalty meets `Config.Loyalty.ContractorSuppliesMinLoyalty` (defaults to `3`).
+Seeds:
+purple_runtz_seed, skunk_seed, hybrid_seed, purple_palm_tree_delight_seed, exotic_seed
 
+Buds:
+purple_runtz_bud, skunk_bud, hybrid_bud, purple_palm_tree_delight_bud, exotic_bud
 
+Bud batches:
+batch_purple_runtz_bud, batch_skunk_bud, batch_hybrid_bud, batch_exotic_bud
 
-## Config map
+Joints:
+joint_exotic_weed, joint_purple_palm_tree_delight, joint_hybrid, joint_skunk, joint_purple_runtz
+
+Blunt cannons:
+blunt_exotic_weed, blunt_purple_palm_tree_delight, blunt_hybrid, blunt_skunk, blunt_purple_runtz
+
+Planters, placeables, supplies:
+empty_planter_box, plant_pot, soil_bag, watering_can, fertilizer_basic, fertilizer_premium, grow_light, drying_rack, weed_bench, trimming_scissors, empty_baggies, digital_scale
+```
+
+Notes:
+
+- `batch_purple_palm_tree_delight_bud` is not used by the stock config.
+- `install_assets/README.md` lists optional PNG names for ox_inventory item icons.
+
+## Resource Checklist
+
+1. Import `sql/install.sql`.
+2. Add the `items.lua` block.
+3. Add or merge the `shops.lua` blocks.
+4. Keep `SmokeOnTheWaterContractor` aligned with `config/loyalty.lua`.
+5. Keep `Config.RollingMinigame.OpenItemKey = 'rolling_tray'` unless you also rename the item.
+6. Keep `Config.RollingMinigame.PaperItem = 'rolling_papers'` unless you also rename the item.
+7. Register any packaged streamed `.ytyp` files already listed in `fxmanifest.lua`.
+8. Restart `ox_inventory`, then restart `w2f-weed`.
+
+## Config Map
 
 | File | Purpose |
-|------|---------|
-| `main.lua` | Core settings, `citizenid`, debug toggles |
-| `contact.lua`, `shipments.lua`, `loyalty.lua`, `rewards.lua` | Contacts, crates, payouts, tiers |
-| `strains.lua` | Seeds/buds ↔ ox item names |
-| `planters.lua`, `growth.lua` | Soil timers, fertilizers, scissors |
-| `placeables.lua` | Deployables + ox events |
-| `rolling.lua` | Tray, papers, joint recipes (`JointItems`) |
-| `integration.lua` | Optional external catalog bridges |
+| ------ | --------- |
+| `config/main.lua` | Core settings, identifier mode, validation, debug toggles |
+| `config/contact.lua` | Contact NPC/mission settings |
+| `config/shipments.lua` | Shipment tiers and drop locations |
+| `config/loyalty.lua` | Loyalty levels and contractor shop gate |
+| `config/rewards.lua` | Contact/shipment rewards |
+| `config/strains.lua` | Seed item -> bud item mapping |
+| `config/planters.lua` | Planter placement, soil, planting, and harvest settings |
+| `config/growth.lua` | Growth timing, fertilizer effects, harvest amount |
+| `config/placeables.lua` | Placeable props and pickup rules |
+| `config/rolling.lua` | Rolling tray, papers, bud cost, and joint output mapping |
+| `config/integration.lua` | Optional external catalog bridges |
 
 ## Troubleshooting
 
-| Issue | Likely fix |
-|-------|------------|
-| USE items never fire | Item keys vs configs; commas in Lua; `restart ox_inventory` |
-| Contractor interaction fails | Loyalty vs `ContractorSuppliesMinLoyalty`; keep `SmokeOnTheWaterContractor` in sync with Lua |
-| Shop hooks silently stop | `restart ox_inventory`, then `restart w2f-weed` |
-| Rolling Station missing art | Confirm `files { ... }` in `fxmanifest.lua` publishes the whole `nui/` folder |
-
+| Issue | Fix |
+| ------- | ----- |
+| USE on `rolling_tray` does nothing | Check the item has `client.event = 'w2f-weed:client:startRollingMinigameFromTray'`, then restart `ox_inventory`. |
+| Planter item does not deploy | Check `empty_planter_box` or `plant_pot` has `client.event = 'w2f-weed:client:startPlanterPlacement'`. |
+| Placeable items do not deploy | Check the item is listed in `config/placeables.lua` and has `client.event = 'w2f-weed:client:startPlaceablePlacement'`. |
+| Contractor shop opens but buys fail | Check player loyalty and `Config.Loyalty.ContractorSuppliesMinLoyalty`. |
+| Shop hooks stop working after edits | Restart `ox_inventory`, then restart `w2f-weed`. |
+| Rolling station art missing | Make sure the full `nui/` folder is included by `fxmanifest.lua`. |
