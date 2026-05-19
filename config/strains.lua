@@ -1,11 +1,6 @@
 -- ─────────────────────────────────────────────
 -- w2f-weed | Config | Strains
 --
--- Fictional GTA roleplay strain definitions.
--- Each strain links a seed item to its bud item; harvest *amount* is Config.Growth.HarvestBud.
--- `yield` on each strain is unused by harvest (kept for reference / future).
--- ─────────────────────────────────────────────
-
 Config = Config or {}
 
 Config.Strains = {
