@@ -4,6 +4,8 @@ Qbox (`qbx_core`) grow-op system: shipments, planter growth, loyalty, deployable
 
 w2f-weed the most advanced weed script on FiveM street contact shipments, loyalty, planters + growth, placeables, optional store integration.
 
+### Currently this script is fully operational. I do update all my scripts weekly until I think theyre perfect, expect updates for refinement and better experience!
+
 ## Quick setup
 
 1. Clone or download into `resources/w2f-weed` **using that exact folder name**.
