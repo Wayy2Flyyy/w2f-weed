@@ -13,7 +13,7 @@ Config = Config or {}
 Config.Growth = {
     Enabled = true,
 
-    -- Server tick interval in minutes (catch-up runs once on resource start).
+    -- Server tick interval in minutes (catch-up runs once on resource start)
     -- With ProgressPerTick at 6, plants reach the harvestable "Ready" stage
     -- at ~15 minutes because stage 4 begins at 90 progress.
     TickMinutes = 1,
