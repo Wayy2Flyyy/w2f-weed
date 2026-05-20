@@ -1,9 +1,10 @@
 Config = Config or {}
 
-Config.Debug = true
+Config.Debug = false
 
 Config.Framework = {
-    Core = 'qbx_core',
+    Core = 'auto', -- auto, qbx_core, qb-core
+    Preferred = 'qbx_core', -- qbx_core is the main/default framework
     Lib = 'ox_lib',
     Inventory = 'ox_inventory',
     Target = 'ox_target',
