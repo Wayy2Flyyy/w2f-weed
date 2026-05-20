@@ -59,6 +59,18 @@ AddEventHandler('QBCore:Server:PlayerLoaded', function(Player)
     end)
 end)
 
+
+RegisterNetEvent('QBCore:Server:OnPlayerLoaded', function()
+    local src = source
+    local citizenid = W2F.GetCitizenId(src)
+    if not citizenid then return end
+
+    CreateThread(function()
+        Wait(750)
+        W2F.SyncContractorSuppliesBlip(citizenid)
+    end)
+end)
+
 --- Expiry checker: periodically checks active shipments and expires them
 CreateThread(function()
     while true do
