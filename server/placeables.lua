@@ -45,11 +45,7 @@ end
 
 local function getPlayer(src)
     if not src or src <= 0 then return nil end
-    local ok, player = pcall(function()
-        return exports.qbx_core:GetPlayer(src)
-    end)
-    if ok then return player end
-    return nil
+    return W2F.GetPlayer(src)
 end
 
 local function getCitizenId(src)

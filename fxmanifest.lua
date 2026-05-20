@@ -25,6 +25,7 @@ shared_scripts {
     -- Shared
     'shared/constants.lua',
     'shared/helpers.lua',
+    'shared/framework.lua',
     'shared/validation.lua',
     'shared/placeables.lua',
     'shared/planters.lua',
@@ -108,7 +109,6 @@ data_file 'DLC_ITYP_REQUEST' 'stream/plant-progress/finish-plant.ytyp'
 data_file 'DLC_ITYP_REQUEST' 'stream/plant-progress/ready-plant.ytyp'
 
 dependencies {
-    'qbx_core',
     'ox_lib',
     'ox_inventory',
     'ox_target',
