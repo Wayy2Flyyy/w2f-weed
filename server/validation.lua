@@ -1,19 +1,39 @@
---- Get a Qbox player object safely
----@param src number
----@return table|nil
-function W2F.GetPlayer(src)
-    if not src or src <= 0 then return nil end
-    local player = exports.qbx_core:GetPlayer(src)
-    if not player then return nil end
-    return player
+local QBCoreObject = nil
+
+local function getQBCoreObject()
+    if QBCoreObject then return QBCoreObject end
+
+    if GetResourceState('qb-core') == 'started' then
+        QBCoreObject = exports['qb-core']:GetCoreObject()
+    end
+
+    return QBCoreObject
 end
 
---- Get citizenid from a source safely
----@param src number
----@return string|nil
+function W2F.GetPlayer(src)
+    if not src or src <= 0 then return nil end
+
+    local core = W2F.Framework.GetCoreName()
+
+    if core == 'qbx_core' then
+        return exports.qbx_core:GetPlayer(src)
+    end
+
+    if core == 'qb-core' then
+        local QBCore = getQBCoreObject()
+        if not QBCore then return nil end
+
+        return QBCore.Functions.GetPlayer(src)
+    end
+
+    W2F.Debug('No supported framework found for GetPlayer')
+    return nil
+end
+
 function W2F.GetCitizenId(src)
     local player = W2F.GetPlayer(src)
     if not player or not player.PlayerData then return nil end
+
     return player.PlayerData.citizenid
 end
 
