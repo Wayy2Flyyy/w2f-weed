@@ -3,7 +3,7 @@ game 'gta5'
 lua54 'yes'
 
 author 'wayy2flyyy'
-description 'Qbox + ox foundation for w2f-weed (seeds, contact, shipments, placeables, planter growth).'
+description 'Qbox/QBCore + ox foundation for w2f-weed (seeds, contact, shipments, placeables, planter growth).'
 version '0.2.0'
 
 shared_scripts {
