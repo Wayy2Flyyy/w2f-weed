@@ -2,8 +2,29 @@ W2F.ActiveShipments = {}
 W2F.Cooldowns = {}
 W2F.BribeCooldowns = {}
 
+
+function W2F.GetOnlinePlayers()
+    local core = W2F.Framework.GetCoreName()
+
+    if core == 'qbx_core' then
+        return exports.qbx_core:GetQBPlayers() or {}
+    end
+
+    if core == 'qb-core' then
+        local QBCore = exports['qb-core']:GetCoreObject()
+        if not QBCore or not QBCore.Functions then
+            return {}
+        end
+        return QBCore.Functions.GetQBPlayers() or {}
+    end
+
+    W2F.Debug('No supported framework found for GetOnlinePlayers')
+    return {}
+end
+
 CreateThread(function()
     W2F.Debug('Initialising server...')
+    W2F.Debug('Detected framework:', W2F.Framework.GetCoreName() or 'none')
 
     W2F.InitDatabase()
 
@@ -16,7 +37,7 @@ AddEventHandler('onResourceStart', function(resource)
 
     CreateThread(function()
         Wait(1500)
-        local players = exports.qbx_core:GetQBPlayers()
+        local players = W2F.GetOnlinePlayers()
         if not players then return end
 
         for _, qPlayer in pairs(players) do
@@ -35,6 +56,18 @@ AddEventHandler('QBCore:Server:PlayerLoaded', function(Player)
     CreateThread(function()
         Wait(750)
         W2F.SyncContractorSuppliesBlip(cid)
+    end)
+end)
+
+
+RegisterNetEvent('QBCore:Server:OnPlayerLoaded', function()
+    local src = source
+    local citizenid = W2F.GetCitizenId(src)
+    if not citizenid then return end
+
+    CreateThread(function()
+        Wait(750)
+        W2F.SyncContractorSuppliesBlip(citizenid)
     end)
 end)
 

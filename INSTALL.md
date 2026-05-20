@@ -1,6 +1,6 @@
 # w2f-weed installation
 
-Qbox (`qbx_core`) weed operation resource for contact shipments, loyalty, planters, placeables, optional shop hooks, and the rolling-station NUI.
+Qbox (`qbx_core`) + QBCore (`qb-core`) weed operation resource for contact shipments, loyalty, planters, placeables, optional shop hooks, and the rolling-station NUI.
 
 ## Quick Start
 
@@ -16,6 +16,17 @@ ensure ox_lib
 ensure ox_inventory
 ensure ox_target
 ensure qbx_core
+ensure w2f-weed
+```
+
+QBCore startup order:
+
+```cfg
+ensure oxmysql
+ensure ox_lib
+ensure ox_inventory
+ensure ox_target
+ensure qb-core
 ensure w2f-weed
 ```
 
@@ -641,3 +652,13 @@ Notes:
 | Contractor shop opens but buys fail | Check player loyalty and `Config.Loyalty.ContractorSuppliesMinLoyalty`. |
 | Shop hooks stop working after edits | Restart `ox_inventory`, then restart `w2f-weed`. |
 | Rolling station art missing | Make sure the full `nui/` folder is included by `fxmanifest.lua`. |
+
+
+## Framework support
+
+Supported:
+- Qbox + ox_inventory
+- QBCore + ox_inventory
+
+Not supported:
+- qb-inventory

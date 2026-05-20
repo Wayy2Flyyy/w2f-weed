@@ -3,7 +3,7 @@ game 'gta5'
 lua54 'yes'
 
 author 'wayy2flyyy'
-description 'Qbox + ox foundation for w2f-weed (seeds, contact, shipments, placeables, planter growth).'
+description 'Qbox/QBCore + ox foundation for w2f-weed.'
 version '0.2.0'
 
 shared_scripts {
@@ -25,6 +25,7 @@ shared_scripts {
     -- Shared
     'shared/constants.lua',
     'shared/helpers.lua',
+    'shared/framework.lua',
     'shared/validation.lua',
     'shared/placeables.lua',
     'shared/planters.lua',
@@ -108,7 +109,6 @@ data_file 'DLC_ITYP_REQUEST' 'stream/plant-progress/finish-plant.ytyp'
 data_file 'DLC_ITYP_REQUEST' 'stream/plant-progress/ready-plant.ytyp'
 
 dependencies {
-    'qbx_core',
     'ox_lib',
     'ox_inventory',
     'ox_target',
