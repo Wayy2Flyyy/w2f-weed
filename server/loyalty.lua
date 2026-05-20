@@ -61,8 +61,8 @@ function W2F.SyncContractorSuppliesBlip(citizenid)
     local lvl = W2F.GetLoyalty(citizenid)
     local show = lvl >= minLevel
 
-    local qPlayer = exports.qbx_core:GetPlayerByCitizenId(citizenid)
-    if not qPlayer or not qPlayer.PlayerData or not qPlayer.PlayerData.source then return end
+    local src = W2F.GetSourceByCitizenId(citizenid)
+    if not src then return end
 
-    TriggerClientEvent('w2f-weed:client:setContractorSuppliesBlip', qPlayer.PlayerData.source, show)
+    TriggerClientEvent('w2f-weed:client:setContractorSuppliesBlip', src, show)
 end

@@ -5,7 +5,7 @@ local function contractorSuppliesMin()
 end
 
 local function contractorShopAllowed(src)
-    local player = exports.qbx_core:GetPlayer(src)
+    local player = W2F.GetPlayer(src)
     if not player or not player.PlayerData or not player.PlayerData.citizenid then return false end
     return W2F.GetLoyalty(player.PlayerData.citizenid) >= contractorSuppliesMin()
 end

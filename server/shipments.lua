@@ -261,7 +261,7 @@ end
 ---@param citizenid string
 ---@return number|nil
 function W2F.GetSourceByCitizenId(citizenid)
-    local players = exports.qbx_core:GetQBPlayers()
+    local players = W2F.GetOnlinePlayers()
     for src, player in pairs(players) do
         if player and player.PlayerData and player.PlayerData.citizenid == citizenid then
             return src
