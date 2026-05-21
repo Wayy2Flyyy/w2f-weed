@@ -13,7 +13,17 @@ Config = Config or {}
 
 Config.Planters = {
     Enabled = true,
-    Debug   = true,
+    Debug   = false,
+
+    Progress = {
+        PlacePlanter = 3000,
+        PickupPlanter = 3000,
+        AddSoil = 4500,
+        PlantSeed = 5000,
+        ApplyFertilizer = 3500,
+        HarvestPlant = 6000,
+        HarvestReadyPlants = 8000,
+    },
 
     -- ─── Items ───────────────────────────────
     -- ox_inventory item names that map to planters / supplies.

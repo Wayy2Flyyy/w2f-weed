@@ -27,6 +27,7 @@ local CurrentItemName   = nil
 local CurrentSlot       = nil
 local CurrentHeading    = 0.0
 local CurrentValid      = true
+local InteractionBusy   = false
 
 local OUTLINE_VALID   = { 90, 230, 140 }
 local OUTLINE_INVALID = { 230, 70, 70 }
@@ -55,6 +56,21 @@ end
 
 local function hideHints()
     if lib and lib.hideTextUI then lib.hideTextUI() end
+end
+
+local function doProgress(label, duration, anim)
+    return lib.progressBar({
+        duration = duration,
+        label = label,
+        useWhileDead = false,
+        canCancel = true,
+        disable = {
+            move = true,
+            car = true,
+            combat = true,
+        },
+        anim = anim
+    })
 end
 
 -- ─────────────────────────────────────────────
@@ -131,6 +147,14 @@ local function attachTarget(entity, payload)
             label    = 'Pick Up ' .. (payload.label or payload.item),
             distance = 2.5,
             onSelect = function()
+                if InteractionBusy then return end
+                InteractionBusy = true
+                local ok = doProgress('Picking up object...', (Config.Placeables.Progress and Config.Placeables.Progress.PickupObject) or 2500, {
+                    dict = 'pickup_object',
+                    clip = 'pickup_low'
+                })
+                InteractionBusy = false
+                if not ok then return end
                 TriggerServerEvent('w2f-weed:server:pickupObject', payload.id)
             end,
         }
@@ -410,6 +434,15 @@ local function startPlacement(itemName, slot)
                     local cx, cy, cz = finalCoords.x, finalCoords.y, finalCoords.z
 
                     endPlacement(false)
+                    if InteractionBusy then break end
+
+                    InteractionBusy = true
+                    local ok = doProgress('Placing object...', (Config.Placeables.Progress and Config.Placeables.Progress.PlaceObject) or 2500, {
+                        dict = 'anim@amb@clubhouse@tutorial@bkr_tut_ig3@',
+                        clip = 'machinic_loop_mechandplayer'
+                    })
+                    InteractionBusy = false
+                    if not ok then break end
 
                     TriggerServerEvent('w2f-weed:server:placeObject', {
                         item    = item,
