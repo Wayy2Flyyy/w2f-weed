@@ -112,6 +112,12 @@ local Translations = {
     ['planter_harvest_complete'] = 'Plant harvested.',
     ['planter_invalid_strain']   = 'Invalid seed.',
     ['planter_loaded']           = 'Planters loaded.',
+    ['planter_progress_cancelled'] = 'Action cancelled.',
+    ['planter_progress_placing'] = 'Placing planter...',
+    ['planter_progress_planting'] = 'Planting seed...',
+    ['planter_progress_pickup']  = 'Picking up planter...',
+    ['planter_progress_trimming'] = 'Trimming plant...',
+    ['planter_progress_trimming_batch'] = 'Trimming plants...',
 
     -- Planter target labels
     ['target_planter_addsoil']   = 'Add Soil',

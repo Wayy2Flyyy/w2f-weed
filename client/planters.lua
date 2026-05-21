@@ -77,6 +77,48 @@ local function hideHints()
     if lib and lib.hideTextUI then lib.hideTextUI() end
 end
 
+--- Run an ox_lib progress bar for planter actions (place, pickup, trim).
+---@param key string Config.Planters.ProgressBars key (PlacePlanter, PlaceSeed, etc.)
+---@param messageKey? string Config.Planters.Messages key for the label
+---@return boolean success True when the bar completed (or progress bars are disabled)
+local function runPlanterProgress(key, messageKey)
+    local bars = Config.Planters and Config.Planters.ProgressBars
+    if not bars or bars.Enabled == false then return true end
+    if not lib or not lib.progressBar then return true end
+
+    local cfg = bars[key] or {}
+    local label = Planters.GetMessage(messageKey or key, key)
+    if Locale and messageKey then
+        local localeKey = ({
+            ProgressPlacingPlanter = 'planter_progress_placing',
+            ProgressPlantingSeed   = 'planter_progress_planting',
+            ProgressPickingUp      = 'planter_progress_pickup',
+            ProgressTrimming       = 'planter_progress_trimming',
+            ProgressTrimmingBatch  = 'planter_progress_trimming_batch',
+        })[messageKey]
+        if localeKey then
+            label = Locale(localeKey)
+        end
+    end
+
+    local options = {
+        duration     = cfg.duration or 4000,
+        label        = label,
+        useWhileDead = false,
+        canCancel    = true,
+        disable      = { move = true, car = true, combat = true },
+    }
+
+    if cfg.anim and cfg.anim.dict and cfg.anim.clip then
+        options.anim = { dict = cfg.anim.dict, clip = cfg.anim.clip }
+    end
+    if cfg.prop then
+        options.prop = cfg.prop
+    end
+
+    return lib.progressBar(options) == true
+end
+
 local function loadModel(modelName, longTimeout)
     local hash = type(modelName) == 'number' and modelName or joaat(modelName)
     local timeout = longTimeout and 15000 or 7500
@@ -233,15 +275,20 @@ local function startPlanterPlacement(itemName, slot)
                     local heading = PlanterPlace.heading
                     local cx, cy, cz = finalCoords.x, finalCoords.y, finalCoords.z
 
-                    endPlanterPlacement(false)
-
-                    TriggerServerEvent('w2f-weed:server:placePlanter', {
-                        item    = item,
-                        slot    = slotVal,
-                        coords  = { x = cx, y = cy, z = cz },
-                        heading = heading,
-                    })
-                    break
+                    hideHints()
+                    if not runPlanterProgress('PlacePlanter', 'ProgressPlacingPlanter') then
+                        notify('ProgressCancelled', 'error')
+                        showHints('[E] Place  •  [Q / →] Rotate  •  [BACKSPACE] Cancel  —  Planter')
+                    else
+                        endPlanterPlacement(false)
+                        TriggerServerEvent('w2f-weed:server:placePlanter', {
+                            item    = item,
+                            slot    = slotVal,
+                            coords  = { x = cx, y = cy, z = cz },
+                            heading = heading,
+                        })
+                        break
+                    end
                 end
             end
 
@@ -293,6 +340,10 @@ local function buildPlanterTargetOptions(planter)
         label    = 'Pick Up Planter',
         distance = 2.5,
         onSelect = function()
+            if not runPlanterProgress('PickupPlanter', 'ProgressPickingUp') then
+                notify('ProgressCancelled', 'error')
+                return
+            end
             TriggerServerEvent('w2f-weed:server:pickupPlanter', planter.id)
         end,
     }
@@ -344,6 +395,10 @@ local function buildPlanterTargetOptions(planter)
                 local hasTool = not requireTool or (exports.ox_inventory:GetItemCount(tool) or 0) >= 1
                 if requireTool and not hasTool then
                     notify('MissingTrimmingScissors', 'error')
+                    return
+                end
+                if not runPlanterProgress('TrimHarvestBatch', 'ProgressTrimmingBatch') then
+                    notify('ProgressCancelled', 'error')
                     return
                 end
                 TriggerServerEvent('w2f-weed:server:harvestReadyPlantsOnPlanter', planter.id)
@@ -452,6 +507,10 @@ local function buildPlantTargetOptions(plant)
             onSelect = function()
                 if requireTool and not hasTool then
                     notify('MissingTrimmingScissors', 'error')
+                    return
+                end
+                if not runPlanterProgress('TrimHarvest', 'ProgressTrimming') then
+                    notify('ProgressCancelled', 'error')
                     return
                 end
                 TriggerServerEvent('w2f-weed:server:harvestPlant', plant.id)
@@ -830,9 +889,15 @@ local function startPlantPlacementPreview(planterId, seedItem, slot, stageIdx, s
                         localY    = PlantPlace.localY,
                         rotation  = PlantPlace.rotation,
                     }
-                    endPlantPlacement(false)
-                    TriggerServerEvent('w2f-weed:server:plantSeedInPlanter', payload)
-                    break
+                    hideHints()
+                    if not runPlanterProgress('PlaceSeed', 'ProgressPlantingSeed') then
+                        notify('ProgressCancelled', 'error')
+                        showHints('[WASD] Move  •  [E] Place  •  [Q / →] Rotate  •  [BACKSPACE] Cancel  —  Plant Seed')
+                    else
+                        endPlantPlacement(false)
+                        TriggerServerEvent('w2f-weed:server:plantSeedInPlanter', payload)
+                        break
+                    end
                 end
             end
 

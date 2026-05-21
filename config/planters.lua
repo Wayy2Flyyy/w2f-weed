@@ -109,6 +109,31 @@ Config.Planters = {
         MinPlanterSpacing    = 1.5, -- min metres between two planters
     },
 
+    -- ─── ox_lib progress bars (place / pickup / trim-harvest) ─
+    ProgressBars = {
+        Enabled = true,
+        PlacePlanter = {
+            duration = 4000,
+            anim = { dict = 'amb@world_human_gardener_plant@male@base', clip = 'base' },
+        },
+        PlaceSeed = {
+            duration = 5000,
+            anim = { dict = 'amb@world_human_gardener_plant@male@base', clip = 'base' },
+        },
+        PickupPlanter = {
+            duration = 3500,
+            anim = { dict = 'random@domestic', clip = 'pickup_low' },
+        },
+        TrimHarvest = {
+            duration = 6000,
+            anim = { dict = 'anim@amb@business@weed@weed_inspecting_lo_med_hi@', clip = 'weed_crouch_checkingleaves_idle_01_inspector' },
+        },
+        TrimHarvestBatch = {
+            duration = 9000,
+            anim = { dict = 'anim@amb@business@weed@weed_inspecting_lo_med_hi@', clip = 'weed_crouch_checkingleaves_idle_01_inspector' },
+        },
+    },
+
     -- ─── Persistence ─────────────────────────
     Persistence = {
         Enabled            = true,
@@ -147,5 +172,11 @@ Config.Planters = {
         InvalidStrain      = 'Invalid seed.',
         ServerRejected     = 'Action rejected by the server.',
         Loaded             = 'Planters loaded.',
+        ProgressCancelled  = 'Action cancelled.',
+        ProgressPlacingPlanter = 'Placing planter...',
+        ProgressPlantingSeed   = 'Planting seed...',
+        ProgressPickingUp      = 'Picking up planter...',
+        ProgressTrimming       = 'Trimming plant...',
+        ProgressTrimmingBatch  = 'Trimming plants...',
     },
 }
