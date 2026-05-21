@@ -301,6 +301,17 @@ function W2FWeed.Planters.LocalToWorld(planter, localX, localY, localZ)
     return planter.coords.x + rx, planter.coords.y + ry, planter.coords.z + (localZ or 0)
 end
 
+--- Convert world coordinates into planter-local coordinates.
+---@param planter table {coords={x,y,z}, heading}
+---@param worldCoords table {x,y,z}
+---@return number localX, number localY
+function W2FWeed.Planters.WorldToLocal(planter, worldCoords)
+    if not planter or not planter.coords or not worldCoords then return 0.0, 0.0 end
+    local dx = (worldCoords.x or 0.0) - (planter.coords.x or 0.0)
+    local dy = (worldCoords.y or 0.0) - (planter.coords.y or 0.0)
+    return W2FWeed.Planters.RotateWorldToLocal(dx, dy, planter.heading or 0.0)
+end
+
 -- ─────────────────────────────────────────────
 -- ID generation
 -- ─────────────────────────────────────────────

@@ -13,7 +13,17 @@ Config = Config or {}
 
 Config.Planters = {
     Enabled = true,
-    Debug   = true,
+    Debug   = false,
+
+    Progress = {
+        PlacePlanter = 3000,
+        PickupPlanter = 3000,
+        AddSoil = 4500,
+        PlantSeed = 5000,
+        ApplyFertilizer = 3500,
+        HarvestPlant = 6000,
+        HarvestReadyPlants = 8000,
+    },
 
     -- ─── Items ───────────────────────────────
     -- ox_inventory item names that map to planters / supplies.
@@ -73,6 +83,8 @@ Config.Planters = {
     -- ─── Plant placement preview (inside soil) ─
     Preview = {
         Enabled       = true,
+        UseCursorPlacement = true,
+        CursorRayDistance = 8.0,
         Alpha         = 170,
         UseOutline    = true,
         OutlineColor  = { 110, 211, 243, 180 },

@@ -18,7 +18,12 @@ Config = Config or {}
 
 Config.Placeables = {
     Enabled = true,
-    Debug   = true,
+    Debug   = false,
+
+    Progress = {
+        PlaceObject = 2500,
+        PickupObject = 2500,
+    },
 
     -- Allow /weed_placeables_clearall (DANGEROUS, off by default).
     AllowClearAll = false,

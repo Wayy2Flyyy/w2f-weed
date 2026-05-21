@@ -23,6 +23,7 @@ local PlanterCache = {}
 local PlantCache   = {}
 -- Map planterId -> { [plantId]=true, ... }
 local PlantsOfPlanter = {}
+local InteractionBusy = false
 
 -- Active planter placement preview
 local PlanterPlace = {
@@ -77,6 +78,21 @@ local function hideHints()
     if lib and lib.hideTextUI then lib.hideTextUI() end
 end
 
+local function doProgress(label, duration, anim)
+    return lib.progressBar({
+        duration = duration,
+        label = label,
+        useWhileDead = false,
+        canCancel = true,
+        disable = {
+            move = true,
+            car = true,
+            combat = true,
+        },
+        anim = anim
+    })
+end
+
 local function loadModel(modelName, longTimeout)
     local hash = type(modelName) == 'number' and modelName or joaat(modelName)
     local timeout = longTimeout and 15000 or 7500
@@ -103,6 +119,28 @@ local function safeDeleteEntity(entity)
     if not DoesEntityExist(entity) then return end
     SetEntityAsMissionEntity(entity, true, true)
     DeleteEntity(entity)
+end
+
+local function rotationToDirection(rot)
+    local rz = math.rad(rot.z or 0.0)
+    local rx = math.rad(rot.x or 0.0)
+    local cosRx = math.abs(math.cos(rx))
+    return vec3(-math.sin(rz) * cosRx, math.cos(rz) * cosRx, math.sin(rx))
+end
+
+local function raycastFromCamera(distance)
+    local ped = PlayerPedId()
+    local camPos = GetGameplayCamCoord()
+    local camRot = GetGameplayCamRot(2)
+    local dir = rotationToDirection(camRot)
+    local rayDist = distance or ((Config.Planters.Preview and Config.Planters.Preview.CursorRayDistance) or 8.0)
+    local dest = vec3(camPos.x + dir.x * rayDist, camPos.y + dir.y * rayDist, camPos.z + dir.z * rayDist)
+    local ray = StartShapeTestRay(camPos.x, camPos.y, camPos.z, dest.x, dest.y, dest.z, -1, ped, 0)
+    local hit, hitBool, endCoords = GetShapeTestResult(ray)
+    if hit ~= 0 and hitBool == 1 and endCoords then
+        return true, vec3(endCoords.x, endCoords.y, endCoords.z)
+    end
+    return false, nil
 end
 
 -- ─────────────────────────────────────────────
@@ -234,6 +272,14 @@ local function startPlanterPlacement(itemName, slot)
                     local cx, cy, cz = finalCoords.x, finalCoords.y, finalCoords.z
 
                     endPlanterPlacement(false)
+                    if InteractionBusy then break end
+                    InteractionBusy = true
+                    local ok = doProgress('Placing planter...', (Config.Planters.Progress and Config.Planters.Progress.PlacePlanter) or 3000, {
+                        dict = 'anim@amb@clubhouse@tutorial@bkr_tut_ig3@',
+                        clip = 'machinic_loop_mechandplayer'
+                    })
+                    InteractionBusy = false
+                    if not ok then break end
 
                     TriggerServerEvent('w2f-weed:server:placePlanter', {
                         item    = item,
@@ -293,6 +339,14 @@ local function buildPlanterTargetOptions(planter)
         label    = 'Pick Up Planter',
         distance = 2.5,
         onSelect = function()
+            if InteractionBusy then return end
+            InteractionBusy = true
+            local ok = doProgress('Picking up planter...', (Config.Planters.Progress and Config.Planters.Progress.PickupPlanter) or 3000, {
+                dict = 'pickup_object',
+                clip = 'pickup_low'
+            })
+            InteractionBusy = false
+            if not ok then return end
             TriggerServerEvent('w2f-weed:server:pickupPlanter', planter.id)
         end,
     }
@@ -304,6 +358,14 @@ local function buildPlanterTargetOptions(planter)
             label    = 'Add Soil',
             distance = 2.5,
             onSelect = function()
+                if InteractionBusy then return end
+                InteractionBusy = true
+                local ok = doProgress('Adding soil...', (Config.Planters.Progress and Config.Planters.Progress.AddSoil) or 4500, {
+                    dict = 'amb@world_human_gardener_plant@male@base',
+                    clip = 'base'
+                })
+                InteractionBusy = false
+                if not ok then return end
                 TriggerServerEvent('w2f-weed:server:addSoilToPlanter', planter.id)
             end,
         }
@@ -346,6 +408,14 @@ local function buildPlanterTargetOptions(planter)
                     notify('MissingTrimmingScissors', 'error')
                     return
                 end
+                if InteractionBusy then return end
+                InteractionBusy = true
+                local ok = doProgress('Harvesting mature plants...', (Config.Planters.Progress and Config.Planters.Progress.HarvestReadyPlants) or 8000, {
+                    dict = 'amb@world_human_gardener_plant@male@base',
+                    clip = 'base'
+                })
+                InteractionBusy = false
+                if not ok then return end
                 TriggerServerEvent('w2f-weed:server:harvestReadyPlantsOnPlanter', planter.id)
             end,
         }
@@ -432,6 +502,14 @@ local function buildPlantTargetOptions(plant)
                 label    = ('Apply %s (-%d min)'):format(fert.label or itemName, fert.decreaseMinutes or 0),
                 distance = 2.0,
                 onSelect = function()
+                    if InteractionBusy then return end
+                    InteractionBusy = true
+                    local ok = doProgress(('Applying %s...'):format(fert.label or itemName), (Config.Planters.Progress and Config.Planters.Progress.ApplyFertilizer) or 3500, {
+                        dict = 'amb@world_human_gardener_plant@male@base',
+                        clip = 'base'
+                    })
+                    InteractionBusy = false
+                    if not ok then return end
                     TriggerServerEvent('w2f-weed:server:applyFertilizerToPlant', plant.id, itemName)
                 end,
             }
@@ -454,6 +532,14 @@ local function buildPlantTargetOptions(plant)
                     notify('MissingTrimmingScissors', 'error')
                     return
                 end
+                if InteractionBusy then return end
+                InteractionBusy = true
+                local ok = doProgress('Harvesting plant...', (Config.Planters.Progress and Config.Planters.Progress.HarvestPlant) or 6000, {
+                    dict = 'amb@world_human_gardener_plant@male@base',
+                    clip = 'base'
+                })
+                InteractionBusy = false
+                if not ok then return end
                 TriggerServerEvent('w2f-weed:server:harvestPlant', plant.id)
             end,
         }
@@ -755,7 +841,7 @@ local function startPlantPlacementPreview(planterId, seedItem, slot, stageIdx, s
     PlantPlace.rotation  = 0.0
     PlantPlace.valid     = true
 
-    showHints('[WASD] Move  •  [E] Place  •  [Q / →] Rotate  •  [BACKSPACE] Cancel  —  Plant Seed')
+    showHints('[Mouse] Aim  •  [E] Plant  •  [Q / →] Rotate  •  [BACKSPACE] Cancel  —  Plant Seed')
 
     local moveSpeed = Config.Planters.Preview.MoveSpeed or 0.015
     local rotSpeed  = 4.0
@@ -773,16 +859,23 @@ local function startPlantPlacementPreview(planterId, seedItem, slot, stageIdx, s
             DisableControlAction(0, 25, true)
             DisableControlAction(0, 24, true)
 
-            -- WASD to nudge local offset (32=W,33=S,34=A,35=D)
             local lx, ly = PlantPlace.localX, PlantPlace.localY
-            if IsControlPressed(0, 32) then ly = ly + moveSpeed end -- W: forward in local Y
-            if IsControlPressed(0, 33) then ly = ly - moveSpeed end -- S
-            if IsControlPressed(0, 34) then lx = lx - moveSpeed end -- A
-            if IsControlPressed(0, 35) then lx = lx + moveSpeed end -- D
-
-            -- Clamp soft-bounds to soil + a tiny slop
-            lx, ly = Planters.ClampToSoilArea(lx, ly)
-            PlantPlace.localX, PlantPlace.localY = lx, ly
+            local useCursor = not Config.Planters.Preview or Config.Planters.Preview.UseCursorPlacement ~= false
+            if useCursor then
+                local hit, hitCoords = raycastFromCamera((Config.Planters.Preview and Config.Planters.Preview.CursorRayDistance) or 8.0)
+                if hit and hitCoords then
+                    local localX, localY = Planters.WorldToLocal(planter, hitCoords)
+                    lx, ly = Planters.ClampToSoilArea(localX, localY)
+                    PlantPlace.localX, PlantPlace.localY = lx, ly
+                end
+            else
+                if IsControlPressed(0, 32) then ly = ly + moveSpeed end
+                if IsControlPressed(0, 33) then ly = ly - moveSpeed end
+                if IsControlPressed(0, 34) then lx = lx - moveSpeed end
+                if IsControlPressed(0, 35) then lx = lx + moveSpeed end
+                lx, ly = Planters.ClampToSoilArea(lx, ly)
+                PlantPlace.localX, PlantPlace.localY = lx, ly
+            end
 
             -- Rotation
             if IsDisabledControlPressed(0, rotL) then
@@ -831,6 +924,14 @@ local function startPlantPlacementPreview(planterId, seedItem, slot, stageIdx, s
                         rotation  = PlantPlace.rotation,
                     }
                     endPlantPlacement(false)
+                    if InteractionBusy then break end
+                    InteractionBusy = true
+                    local ok = doProgress('Planting seed...', (Config.Planters.Progress and Config.Planters.Progress.PlantSeed) or 5000, {
+                        dict = 'amb@world_human_gardener_plant@male@base',
+                        clip = 'base'
+                    })
+                    InteractionBusy = false
+                    if not ok then break end
                     TriggerServerEvent('w2f-weed:server:plantSeedInPlanter', payload)
                     break
                 end
