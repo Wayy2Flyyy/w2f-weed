@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LS Smoke Co. — Rolling Station</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="app" class="is-hidden">
+
+    <!-- Ambient background particles -->
+    <div class="bg-particles" id="bg-particles"></div>
+    <div class="phase-tint" id="phase-tint"></div>
+
+    <!-- Game Panel -->
+    <div class="game-panel">
+
+      <!-- Header -->
+      <div class="panel-header">
+        <div class="header-left">
+          <svg class="leaf-svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17,8C8,10,5.9,16.17,3.82,21.34L5.71,22l1-2.3A4.49,4.49,0,0,0,8,20C19,20,22,3,22,3,21,5,14,5.83,17,8Z"/>
+          </svg>
+          <span class="header-title">Rolling Station</span>
+        </div>
+
+        <div class="phase-track">
+          <div class="phase-step" id="ps-0"><div class="phase-dot">1</div><span>Strain</span></div>
+          <div class="phase-line"></div>
+          <div class="phase-step" id="ps-1"><div class="phase-dot">2</div><span>Grind</span></div>
+          <div class="phase-line"></div>
+          <div class="phase-step" id="ps-2"><div class="phase-dot">3</div><span>Roll</span></div>
+          <div class="phase-line"></div>
+          <div class="phase-step" id="ps-3"><div class="phase-dot">4</div><span>Done</span></div>
+        </div>
+
+        <div class="header-right">
+          <div class="session-stat" title="Joints rolled this session">
+            <span class="ss-icon">🔥</span>
+            <span class="ss-val" id="ss-rolled">0</span>
+          </div>
+          <button class="header-btn" id="reset-btn" title="Reset (Esc)">↺</button>
+        </div>
+      </div>
+
+      <!-- =================== PHASE 0: SELECT STRAIN =================== -->
+      <div id="phase-select" class="phase active">
+        <p class="phase-subtitle">Pick your strain — every choice tells a different story.</p>
+        <div class="strain-grid" id="strain-grid"><!-- JS --></div>
+      </div>
+
+      <!-- =================== PHASE 1: GRIND =================== -->
+      <div id="phase-grind" class="phase">
+        <div class="grind-layout">
+
+          <!-- Left: Bud info -->
+          <div class="grind-col grind-left">
+            <div class="bud-card" id="bud-card">
+              <div class="bud-img-stage">
+                <img id="bud-img" src="" alt="Bud" class="bud-img">
+                <div class="bud-shadow"></div>
+              </div>
+              <div class="bud-card-info">
+                <div class="bud-name" id="bud-name">—</div>
+                <div class="bud-meta">
+                  <span class="bud-thc" id="bud-thc">THC —%</span>
+                  <span class="bud-rarity-badge" id="bud-rarity-badge">—</span>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-block" id="load-btn">
+              <span class="btn-icon">⤓</span> Drop into Grinder
+            </button>
+          </div>
+
+          <!-- Center: Grinder -->
+          <div class="grind-col grind-center">
+            <div class="grinder-scene">
+
+              <!-- Falling bud (animation when loading) -->
+              <img class="falling-bud" id="falling-bud" src="" alt="">
+
+              <div class="grinder-perspective">
+                <div class="grinder-shadow"></div>
+                <div class="grinder-wrap" id="grinder-wrap">
+                  <img id="grinder-img" src="assets/full_grinder.svg" alt="Grinder" class="grinder-img">
+                  <div class="grinder-glow" id="grinder-glow"></div>
+                  <div class="particle-field" id="particle-field"></div>
+                  <!-- Rotation indicator arrow -->
+                  <svg class="rotate-hint" id="rotate-hint" viewBox="0 0 100 100">
+                    <path d="M 50 10 A 40 40 0 1 1 10 50" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 6"/>
+                    <polygon points="50,10 42,2 58,2" fill="currentColor"/>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="grinder-label" id="grinder-label">EMPTY</div>
+            </div>
+
+            <!-- Circular progress ring -->
+            <div class="ring-progress">
+              <svg viewBox="0 0 120 120" class="ring-svg">
+                <circle class="ring-bg" cx="60" cy="60" r="52"/>
+                <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="52"
+                  stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+              </svg>
+              <span class="ring-pct" id="ring-pct">0%</span>
+            </div>
+
+            <p class="grind-hint" id="grind-hint">Drop the bud in to begin</p>
+          </div>
+
+          <!-- Right: Grinded output -->
+          <div class="grind-col grind-right">
+            <div class="grinded-out" id="grinded-out">
+              <div class="grinded-jar">
+                <div class="grinded-fill" id="grinded-fill">
+                  <img src="assets/grinded_weed.svg" alt="Grinded" class="grinded-img">
+                </div>
+              </div>
+              <div class="grinded-label">Grinded Bud</div>
+              <div class="grinded-amount" id="grinded-amount">0g</div>
+            </div>
+            <button class="btn btn-gold btn-block hidden" id="collect-btn">
+              Take to Tray →
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- =================== PHASE 2: ROLL =================== -->
+      <div id="phase-roll" class="phase">
+        <div class="roll-layout">
+
+          <!-- Tray surface (3D perspective) -->
+          <div class="tray-outer">
+            <div class="tray-inner" id="tray-inner">
+              <img src="assets/rolling_tray.svg" alt="Rolling Tray" class="tray-img">
+
+              <div class="tray-overlay">
+
+                <!-- Rolling papers booklet (clickable to pull paper) -->
+                <div class="papers-booklet" id="papers-booklet">
+                  <img src="assets/rolling_papers.svg" alt="Papers">
+                  <div class="booklet-tag">Tap for Paper</div>
+                </div>
+
+                <!-- The paper that slides out and onto tray -->
+                <div class="tray-paper" id="tray-paper">
+                  <div class="paper-body" id="paper-body">
+                    <div class="paper-weed-layer" id="paper-weed-layer"></div>
+                    <div class="paper-fold"></div>
+                    <div class="paper-line"></div>
+                  </div>
+                  <div class="paper-tip"></div>
+                  <!-- Joint preview overlay (replaces paper after rolling) -->
+                  <img class="paper-joint-result" id="paper-joint-result" src="" alt="">
+                </div>
+
+                <!-- Grinded weed pile (draggable) -->
+                <div class="tray-weed-pile" id="tray-weed-pile" draggable="false">
+                  <img src="assets/grinded_weed.svg" alt="Weed">
+                  <div class="pile-tag" id="pile-tag">Drag onto paper</div>
+                </div>
+
+                <!-- Ghost image while dragging -->
+                <img class="drag-ghost" id="drag-ghost" src="assets/grinded_weed.svg" alt="">
+
+                <!-- Roll swipe area -->
+                <div class="roll-swipe-area hidden" id="roll-swipe-area">
+                  <div class="swipe-track">
+                    <div class="swipe-fill" id="swipe-fill"></div>
+                    <div class="swipe-thumb" id="swipe-thumb">
+                      <span>↑</span>
+                    </div>
+                  </div>
+                  <div class="swipe-label">Drag UP to Roll</div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Steps sidebar -->
+          <div class="steps-sidebar">
+            <div class="steps-title">Rolling Steps</div>
+            <div class="step-list" id="step-list"><!-- JS --></div>
+            <div class="quality-meter" id="quality-meter">
+              <div class="qm-label">Roll Quality</div>
+              <div class="qm-bar"><div class="qm-fill" id="qm-fill"></div></div>
+              <div class="qm-val" id="qm-val">—</div>
+            </div>
+            <button class="btn btn-primary btn-block" id="roll-action-btn" disabled>
+              Open the Booklet
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- =================== PHASE 3: COMPLETE =================== -->
+      <div id="phase-complete" class="phase">
+        <div class="complete-layout">
+
+          <!-- Tray scene with rolled joint resting off-centre -->
+          <div class="complete-tray-outer">
+            <div class="complete-tray-inner">
+              <img src="assets/rolling_tray.svg" alt="Rolling Tray" class="complete-tray-img">
+              <img class="complete-joint" id="joint-image" src="" alt="Joint">
+              <div class="complete-joint-shadow"></div>
+            </div>
+          </div>
+
+          <!-- Result info -->
+          <div class="complete-info">
+            <div class="complete-check">✓</div>
+            <h2 class="complete-title" id="complete-title">Joint Rolled!</h2>
+            <div class="complete-strain-name" id="complete-strain-name">—</div>
+
+            <div class="complete-stats">
+              <div class="cstat">
+                <span class="cstat-icon">🌿</span>
+                <span class="cstat-label">Strain</span>
+                <span class="cstat-val" id="cstat-strain">—</span>
+              </div>
+              <div class="cstat">
+                <span class="cstat-icon">⚡</span>
+                <span class="cstat-label">THC</span>
+                <span class="cstat-val" id="cstat-thc">—</span>
+              </div>
+              <div class="cstat">
+                <span class="cstat-icon">⭐</span>
+                <span class="cstat-label">Quality</span>
+                <span class="cstat-val" id="cstat-quality">—</span>
+              </div>
+              <div class="cstat">
+                <span class="cstat-icon">🕐</span>
+                <span class="cstat-label">Time</span>
+                <span class="cstat-val" id="cstat-time">—</span>
+              </div>
+            </div>
+
+            <button class="btn btn-gold btn-block complete-btn" id="complete-btn">
+              Roll Another
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- end .game-panel -->
+
+    <!-- Toast notifications -->
+    <div class="toast-stack" id="toast-stack"></div>
+
+  </div><!-- end #app -->
+
+  <script src="script.js"></script>
+</body>
+</html>
